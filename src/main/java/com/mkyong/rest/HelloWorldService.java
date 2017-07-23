@@ -12,7 +12,11 @@ public class HelloWorldService {
 	@Path("/{param}")
 	public Response getMsg(@PathParam("param") String msg) {
  
+<<<<<<< HEAD
 		String output = "Iasmin says : " + msg;
+=======
+		String output = "Teste: modificado - mensgem: " + msg;
+>>>>>>> 23a02d9f77428118852dd31dd8b12a621945a222
  
 		return Response.status(200).entity(output).build();
  
