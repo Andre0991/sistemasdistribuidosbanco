@@ -61,4 +61,7 @@ public class Cliente {
 		this.saldoContaPoupanca = saldoContaPoupanca;
 	}
 
+	public Cliente() {
+	}
+
 }
