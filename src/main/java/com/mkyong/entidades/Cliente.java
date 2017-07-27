@@ -8,9 +8,9 @@ public class Cliente {
 	
 	private Long id;
 	
-	private Double saldoContaCorrente;
+	private ContaCorrente contaCorrente;
 
-	private Double saldoContaPoupanca;
+	private ContaPoupanca contaPoupanca;
 
 	public String getNome() {
 		return nome;
@@ -36,32 +36,21 @@ public class Cliente {
 		this.id = id;
 	}
 
-	public Double getSaldoContaCorrente() {
-		return saldoContaCorrente;
+	public ContaCorrente getContaCorrente() {
+		return contaCorrente;
 	}
 
-	public void setSaldoContaCorrente(Double saldoContaCorrente) {
-		this.saldoContaCorrente = saldoContaCorrente;
+	public void setContaCorrente(ContaCorrente contaCorrente) {
+		this.contaCorrente = contaCorrente;
 	}
 
-	public Double getSaldoContaPoupanca() {
-		return saldoContaPoupanca;
+	public ContaPoupanca getContaPoupanca() {
+		return contaPoupanca;
 	}
 
-	public void setSaldoContaPoupanca(Double saldoContaPoupanca) {
-		this.saldoContaPoupanca = saldoContaPoupanca;
+	public void setContaPoupanca(ContaPoupanca contaPoupanca) {
+		this.contaPoupanca = contaPoupanca;
 	}
 
-	public Cliente(String nome, String sobrenome, Long id, Double saldoContaCorrente, Double saldoContaPoupanca) {
-		super();
-		this.nome = nome;
-		this.sobrenome = sobrenome;
-		this.id = id;
-		this.saldoContaCorrente = saldoContaCorrente;
-		this.saldoContaPoupanca = saldoContaPoupanca;
-	}
-
-	public Cliente() {
-	}
 
 }
