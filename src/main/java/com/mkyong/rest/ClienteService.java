@@ -45,14 +45,21 @@ public class ClienteService {
 	}
 
 	@POST
-	@Path("/{id}/deposito")
+	@Path("/deposito")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response depositoContaCorrente(final DepositoRequest depositoRequest) {
+		Response resposta;
 		ContaCorrenteDAO contaCorrenteDAO = Singleton.INSTANCE.getContaCorrenteDAO();
-		ContaCorrente contaCorrente = contaCorrenteDAO.findByNumero(depositoRequest.getContaCorrente().getNumeracao());
-//		String result = "Track saved : " + track;
-//		return Response.status(201).entity(result).build();
-		return null;
+		ContaCorrente contaCorrente = contaCorrenteDAO.findByNumero(depositoRequest.getNumero());
+		if (contaCorrente == null) {
+			resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
+		}
+		else {
+			double saldoAntesDoDeposito = contaCorrente.getSaldo();
+			contaCorrente.setSaldo(saldoAntesDoDeposito + depositoRequest.getValor());
+			resposta = Response.status(STATUS_CODE_OK).build();
+		}
+		return resposta;
 	}
 
 }
