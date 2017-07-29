@@ -9,12 +9,14 @@ import com.mkyong.entidades.ContaPoupanca;
 
 import dao.ClienteDAO;
 import dao.ContaCorrenteDAO;
+import dao.LogDepositoDAO;
 
 public enum Singleton {
 	INSTANCE;
 
 	private ClienteDAO clienteDAO;
 	private ContaCorrenteDAO contaCorrenteDAO;
+	private LogDepositoDAO logDepositoDAO;
 
 	private Singleton() {
 
@@ -79,9 +81,16 @@ public enum Singleton {
 		contasCorrentes.add(contaCorrente2);
 		contasCorrentes.add(contaCorrente3);
 		this.contaCorrenteDAO = new ContaCorrenteDAO(contasCorrentes);
+		
+		// logDepositoDAO
+		this.logDepositoDAO = new LogDepositoDAO();
 
 	}
 	
+	public LogDepositoDAO getLogDepositoDAO() {
+		return logDepositoDAO;
+	}
+
 	public ClienteDAO getClienteDAO() {
 		return this.clienteDAO;
 	}

@@ -4,7 +4,7 @@ import com.mkyong.entidades.ContaCorrente;
 
 public class DepositoRequest {
 	
-	private String numero;
+	private String numeroConta;
 	private Double valor;
 
 
@@ -12,12 +12,12 @@ public class DepositoRequest {
 		return valor;
 	}
 
-	public String getNumero() {
-		return numero;
+	public String getNumeroConta() {
+		return numeroConta;
 	}
 
-	public void setNumero(String numero) {
-		this.numero = numero;
+	public void setNumeroConta(String numero) {
+		this.numeroConta = numero;
 	}
 
 	public void setValor(Double valor) {
