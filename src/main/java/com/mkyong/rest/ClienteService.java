@@ -10,10 +10,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.mkyong.entidades.Cliente;
+import com.mkyong.entidades.ContaCorrente;
 
 import conversor.ClienteConversor;
 import dao.ClienteDAO;
+import dao.ContaCorrenteDAO;
 import dto.ContaCorrenteDTO;
+import factory.Singleton;
 import request.DepositoRequest;
 
 @Path("/cliente")
@@ -25,9 +28,10 @@ public class ClienteService {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/saldoContaCorrente")
-	public Response consultarSaldo(@PathParam("id") String id) {
+	public Response consultarSaldo(final @PathParam("id") String id) {
 		Response resposta = null;
-		ClienteDAO clienteDAO = new ClienteDAO();
+		ClienteDAO clienteDAO = Singleton.INSTANCE.getClienteDAO();
+
 		// TODO: e se parsing falhar?
 		Cliente cliente = clienteDAO.findById(Long.parseLong(id));
 		if (cliente == null) {
@@ -40,5 +44,15 @@ public class ClienteService {
 		return resposta;
 	}
 
+	@POST
+	@Path("/{id}/deposito")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response depositoContaCorrente(final DepositoRequest depositoRequest) {
+		ContaCorrenteDAO contaCorrenteDAO = Singleton.INSTANCE.getContaCorrenteDAO();
+		ContaCorrente contaCorrente = contaCorrenteDAO.findByNumero(depositoRequest.getContaCorrente().getNumeracao());
+//		String result = "Track saved : " + track;
+//		return Response.status(201).entity(result).build();
+		return null;
+	}
 
 }

@@ -1,4 +1,4 @@
-package dao;
+package factory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,14 +7,18 @@ import com.mkyong.entidades.Cliente;
 import com.mkyong.entidades.ContaCorrente;
 import com.mkyong.entidades.ContaPoupanca;
 
-public class ClienteDAO {
-	
-	private List<Cliente> clientesMock;
+import dao.ClienteDAO;
+import dao.ContaCorrenteDAO;
 
-	public ClienteDAO() {
-		super();
-		this.clientesMock = new ArrayList<Cliente>();
+public enum Singleton {
+	INSTANCE;
 
+	private ClienteDAO clienteDAO;
+	private ContaCorrenteDAO contaCorrenteDAO;
+
+	private Singleton() {
+
+		List<Cliente> clientesMock = new ArrayList<Cliente>();
 		// client 1
 		Cliente cliente1 = new Cliente();
 		cliente1.setNome("Andre");
@@ -63,24 +67,27 @@ public class ClienteDAO {
 		contaPoupanca3.setSaldo(30D);
 		cliente3.setContaPoupanca(contaPoupanca3);
 
-		this.clientesMock.add(cliente1);
-		this.clientesMock.add(cliente2);
-		this.clientesMock.add(cliente3);
+		// clienteDAO
+		clientesMock.add(cliente1);
+		clientesMock.add(cliente2);
+		clientesMock.add(cliente3);
+		this.clienteDAO = new ClienteDAO(clientesMock);
+		
+		// contaCorrenteDAO
+		List<ContaCorrente> contasCorrentes = new ArrayList<ContaCorrente>(); 
+		contasCorrentes.add(contaCorrente1);
+		contasCorrentes.add(contaCorrente2);
+		contasCorrentes.add(contaCorrente3);
+		this.contaCorrenteDAO = new ContaCorrenteDAO(contasCorrentes);
+
 	}
 	
-	public ClienteDAO(List<Cliente> clientesMock) {
-		super();
-		this.clientesMock = clientesMock;
+	public ClienteDAO getClienteDAO() {
+		return this.clienteDAO;
 	}
-
-	public Cliente findById(final Long id) {
-		Cliente clienteRetorno = null;
-		for (final Cliente cliente : this.clientesMock) {
-			if (cliente.getId().equals(id)) {
-				clienteRetorno = cliente;
-			}
-		}
-		return clienteRetorno;
+	
+	public ContaCorrenteDAO getContaCorrenteDAO() {
+		return this.contaCorrenteDAO;
 	}
 
 }
