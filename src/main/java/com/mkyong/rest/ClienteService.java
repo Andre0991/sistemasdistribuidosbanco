@@ -38,7 +38,6 @@ public class ClienteService {
 		Response resposta = null;
 		ClienteDAO clienteDAO = Singleton.INSTANCE.getClienteDAO();
 
-		// TODO: e se parsing falhar?
 		Cliente cliente = clienteDAO.findById(Long.parseLong(id));
 		if (cliente == null) {
 			resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
