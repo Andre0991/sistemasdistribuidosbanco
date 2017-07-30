@@ -16,14 +16,16 @@ public enum SingletonBanco {
 		
 		// banco1
 		Banco banco1 = new Banco();
-		banco1.setNome_banco("Banco1");
+		banco1.setNome("Banco1");
 		banco1.setId(1);
+		banco1.setEndereco("localhost:test");
 		
 		
 		// banco2
 		Banco banco2 = new Banco();
-		banco2.setNome_banco("Banco2");
+		banco2.setNome("Banco2");
 		banco2.setId(2);
+		banco2.setEndereco("localhost:test2");
 		
 
 		// bancoDAO

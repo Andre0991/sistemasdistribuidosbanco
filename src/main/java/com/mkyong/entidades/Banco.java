@@ -3,12 +3,19 @@ package com.mkyong.entidades;
 public class Banco {
 		
 		private int id;
+		private String nome;
+		private String endereco;
 		
-		private String Nome_banco;
-		
-		public int getid () {
+		public String getEndereco() {
+			return endereco;
+		}
+
+		public void setEndereco(String endereco) {
+			this.endereco = endereco;
+		}
+
+		public int getId () {
 			return id;
-		
 		}
 		
 		public void setId(int id) {
@@ -16,12 +23,12 @@ public class Banco {
 			
 		}
 		
-		public String getNome_banco(){
-			return Nome_banco;
+		public String getNome(){
+			return nome;
 		}
 		
-		public void setNome_banco(String Nome_banco) {
-			this.Nome_banco = Nome_banco;
+		public void setNome(String nome) {
+			this.nome = nome;
 		}
 		
 		

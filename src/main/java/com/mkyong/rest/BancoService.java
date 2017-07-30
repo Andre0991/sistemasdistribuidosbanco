@@ -12,7 +12,7 @@ import javax.ws.rs.core.Response;
 
 
 
-@Path("/id")
+@Path("/banco")
 public class BancoService {
 
 			private static final int STATUS_CODE_NOT_FOUND = 404;
@@ -24,7 +24,6 @@ public class BancoService {
 			public Response consultarBanco(final @PathParam("id") int id) {
 				Response resposta = null;
 				
-				
 				BancoDAO bancoDAO = SingletonBanco.INSTANCE.getBancoDAO();
 				Banco banco = bancoDAO.findById(id);
 				
@@ -32,7 +31,7 @@ public class BancoService {
 					resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
 				}
 				else {
-					resposta = Response.status(STATUS_CODE_OK).build();
+					resposta = Response.status(STATUS_CODE_OK).entity(banco).build();
 				}
 				return resposta;
 			}
