@@ -2,8 +2,11 @@ package com.mkyong.entidades;
 
 import java.util.Date;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 import common.StatusDeposito;
 
+@XmlRootElement
 public class LogDeposito {
 	
 	private Double valor;

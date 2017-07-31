@@ -1,5 +1,8 @@
 package com.mkyong.entidades;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
 public class Banco {
 		
 		private int id;

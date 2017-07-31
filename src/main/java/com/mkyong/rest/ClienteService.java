@@ -10,9 +10,14 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import com.mkyong.entidades.Banco;
 import com.mkyong.entidades.Cliente;
 import com.mkyong.entidades.ContaCorrente;
 import com.mkyong.entidades.LogDeposito;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
 
 import common.StatusDeposito;
 import conversor.ClienteConversor;
@@ -21,6 +26,7 @@ import dao.ContaCorrenteDAO;
 import dto.ContaCorrenteDTO;
 import factory.Singleton;
 import request.DepositoRequest;
+import request.TedRequest;
 
 @Path("/cliente")
 public class ClienteService {
@@ -79,6 +85,32 @@ public class ClienteService {
 		}
 		Singleton.INSTANCE.getLogDepositoDAO().add(logDeposito);
 		return resposta;
+	}
+	
+	@POST
+	@Path("/ted")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response ted(final TedRequest tedRequest) {
+
+		Client client = Client.create();
+
+		WebResource webResource = client
+		   .resource("http://localhost:10080/RESTfulExample/rest/banco/" + tedRequest.getIdBanco());
+
+		ClientResponse response = webResource.accept("application/json")
+                   .get(ClientResponse.class);
+
+		if (response.getStatus() != 200) {
+		   throw new RuntimeException("Failed : HTTP error code : "
+			+ response.getStatus());
+		}
+		
+		Banco entity = response.getEntity(Banco.class);
+		String endereco = entity.getEndereco();
+		
+		// TODO: continuar
+
+		return null;
 	}
 
 }
