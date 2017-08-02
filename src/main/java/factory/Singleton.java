@@ -28,12 +28,12 @@ public enum Singleton {
 		cliente1.setId(1L);
 		ContaCorrente contaCorrente1 = new ContaCorrente();
 		contaCorrente1.setCliente(cliente1);
-		contaCorrente1.setNumeracao("BBBBB");
+		contaCorrente1.setNumeracao("AAAAA");
 		contaCorrente1.setSaldo(10D);
 		cliente1.setContaCorrente(contaCorrente1);
 		ContaPoupanca contaPoupanca1 = new ContaPoupanca();
 		contaPoupanca1.setCliente(cliente1);
-		contaPoupanca1.setNumeracao("BBBBB");
+		contaPoupanca1.setNumeracao("AAAAA");
 		contaPoupanca1.setSaldo(10D);
 		cliente1.setContaPoupanca(contaPoupanca1);
 		
