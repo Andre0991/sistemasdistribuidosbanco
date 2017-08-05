@@ -31,8 +31,8 @@ import request.DepositoRequest;
 import request.TedRequest;
 import request.TransIntraBanco;
 
-@Path("/cliente")
-public class ClienteService {
+@Path("/contaCorrente")
+public class ContaCorrenteService {
 
 	private static final String TED_RECEIVER_NAME = "tedReceiver";
 	private static final int STATUS_CODE_OK = 200;
@@ -42,7 +42,7 @@ public class ClienteService {
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/saldoContaCorrente/{id}")
+	@Path("/saldo/{id}")
 	public Response consultarSaldo(final @PathParam("id") String id) {
 		Response resposta = null;
 		ClienteDAO clienteDAO = Singleton.INSTANCE.getClienteDAO();

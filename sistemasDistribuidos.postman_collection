@@ -1,0 +1,93 @@
+{
+	"variables": [],
+	"info": {
+		"name": "sistemasDistribuidos",
+		"_postman_id": "5145b656-6afc-0989-f0b6-3e74c86c562b",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "deposito",
+			"request": {
+				"url": "http://localhost:8080/RESTfulExample/rest/contaCorrente/deposito",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"numeroConta\" : \"BBBBB\",\n\t\"valor\" : 12.1\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "ted sender",
+			"request": {
+				"url": "http://localhost:8080/RESTfulExample/rest/contaCorrente/tedSender",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"idBancoDestino\" : \"2\",\n\t\"valor\" : 1.1,\n\t\"numeroContaOrigem\" : \"AAAAA\",\n\t\"numeroContaDestino\" : \"BBBBB\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "ted receiver",
+			"request": {
+				"url": "http://localhost:8080/RESTfulExample/rest/contaCorrente/tedReceiver",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"idBancoDestino\" : \"2\",\n\t\"valor\" : 12.1,\n\t\"numeroContaOrigem\" : \"AAAAA\",\n\t\"numeroContaDestino\" : \"BBBBB\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "saldo cc",
+			"request": {
+				"url": "http://localhost:8080/RESTfulExample/rest/cliente/1/saldoContaCorrente",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "banco",
+			"request": {
+				"url": "http://localhost:8080/RESTfulExample/rest/banco/1",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
