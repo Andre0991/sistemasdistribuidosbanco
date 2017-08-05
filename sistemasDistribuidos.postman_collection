@@ -70,7 +70,7 @@
 		{
 			"name": "saldo cc",
 			"request": {
-				"url": "http://localhost:8080/RESTfulExample/rest/cliente/1/saldoContaCorrente",
+				"url": "http://localhost:8080/RESTfulExample/rest/contaCorrente/saldo/1",
 				"method": "GET",
 				"header": [],
 				"body": {},
