@@ -27,6 +27,7 @@ import dto.ContaCorrenteDTO;
 import factory.Singleton;
 import request.DepositoRequest;
 import request.TedRequest;
+import request.TransIntraBanco;
 
 @Path("/cliente")
 public class ClienteService {
@@ -147,5 +148,33 @@ public class ClienteService {
 //		Singleton.INSTANCE.getLogDepositoDAO().add(logDeposito);
 		return resposta;
 	}
+	
+	
+	@POST
+	@Path("/transferencia")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response transferencia(final TransIntraBanco transIntraBanco) {
 
+		Response resposta;
+
+		try {
+			ContaCorrenteDAO contaCorrenteDAO = Singleton.INSTANCE.getContaCorrenteDAO();
+			ContaCorrente contaCorrente = contaCorrenteDAO.findByNumero(transIntraBanco.getNumeracao());
+			if (contaCorrente == null) {
+				resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
+			}
+			else {
+				double saldoAntesDaTransferencia = contaCorrente.getSaldo();
+				contaCorrente.setSaldo(saldoAntesDaTransferencia + transIntraBanco.getValor());
+				resposta = Response.status(STATUS_CODE_OK).build();
+			}
+		}
+		catch (Exception e) {
+			resposta = Response.status(STATUS_CODE_ERROR).build();
+		}
+		return resposta;
+	}
+	
+			
 }
+
