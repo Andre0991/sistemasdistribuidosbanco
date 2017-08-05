@@ -29,7 +29,7 @@ import dto.ContaCorrenteDTO;
 import factory.Singleton;
 import request.DepositoRequest;
 import request.TedRequest;
-import request.TransIntraBanco;
+import request.Transferencia;
 
 @Path("/contaCorrente")
 public class ContaCorrenteService {
@@ -202,28 +202,42 @@ public class ContaCorrenteService {
 	@POST
 	@Path("/transferencia")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response transferencia(final TransIntraBanco transIntraBanco) {
+	public Response transferencia(final Transferencia transferencia) {
 
 		Response resposta;
 
 		try {
 			ContaCorrenteDAO contaCorrenteDAO = Singleton.INSTANCE.getContaCorrenteDAO();
-			ContaCorrente contaCorrente = contaCorrenteDAO.findByNumero(transIntraBanco.getNumeracao());
-			if (contaCorrente == null) {
+			ContaCorrente contaCorrenteDestino = contaCorrenteDAO.findByNumero(transferencia.getContaDestino());
+			if (contaCorrenteDestino == null) {
 				resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
 			}
 			else {
-				double saldoAntesDaTransferencia = contaCorrente.getSaldo();
-				contaCorrente.setSaldo(saldoAntesDaTransferencia + transIntraBanco.getValor());
+				double saldoAntesDaTransferencia = contaCorrenteDestino.getSaldo();
+				contaCorrenteDestino.setSaldo(saldoAntesDaTransferencia + transferencia.getValor());
 				resposta = Response.status(STATUS_CODE_OK).build();
+
+				ContaCorrente contaCorrenteOrigem = contaCorrenteDAO.findByNumero(transferencia.getContaOrigem());
+				if (contaCorrenteOrigem == null) {
+					resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
+				}
+				else {
+					double saldoOrigemAntesDaTransferencia = contaCorrenteOrigem.getSaldo();
+					contaCorrenteOrigem.setSaldo(saldoOrigemAntesDaTransferencia - transferencia.getValor());
+					resposta = Response.status(STATUS_CODE_OK).build();
+				}
+
 			}
+
 		}
 		catch (Exception e) {
 			resposta = Response.status(STATUS_CODE_ERROR).build();
+
 		}
 		return resposta;
 	}
+}
 	
 			
-}
+
 
