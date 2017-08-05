@@ -4,19 +4,16 @@ import java.util.Date;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import common.StatusDeposito;
+import common.StatusTransacao;
 
 @XmlRootElement
 public class LogDeposito {
 	
 	private Double valor;
-	
 	private String numeroConta;
-	
+
 	private Date horario;
-	
-	private StatusDeposito status;
-	
+	private StatusTransacao status;
 	private String msgExcecao;
 
 	public Double getValor() {
@@ -43,11 +40,11 @@ public class LogDeposito {
 		this.horario = horario;
 	}
 
-	public StatusDeposito getStatus() {
+	public StatusTransacao getStatus() {
 		return status;
 	}
 
-	public void setStatus(StatusDeposito status) {
+	public void setStatus(StatusTransacao status) {
 		this.status = status;
 	}
 

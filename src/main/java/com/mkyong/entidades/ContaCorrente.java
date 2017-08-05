@@ -35,5 +35,8 @@ public class ContaCorrente {
 		this.numeracao = numeracao;
 	}
 	
+	public boolean temSaldoParaTransferencia(Double valorTransferencia) {
+		return this.saldo >= valorTransferencia;
+	}
 
 }

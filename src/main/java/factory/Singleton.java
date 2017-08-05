@@ -10,6 +10,7 @@ import com.mkyong.entidades.ContaPoupanca;
 import dao.ClienteDAO;
 import dao.ContaCorrenteDAO;
 import dao.LogDepositoDAO;
+import dao.LogTedDAO;
 
 public enum Singleton {
 	INSTANCE;
@@ -17,6 +18,7 @@ public enum Singleton {
 	private ClienteDAO clienteDAO;
 	private ContaCorrenteDAO contaCorrenteDAO;
 	private LogDepositoDAO logDepositoDAO;
+	private LogTedDAO logTedDAO;
 
 	private Singleton() {
 
@@ -28,12 +30,12 @@ public enum Singleton {
 		cliente1.setId(1L);
 		ContaCorrente contaCorrente1 = new ContaCorrente();
 		contaCorrente1.setCliente(cliente1);
-		contaCorrente1.setNumeracao("BBBBB");
+		contaCorrente1.setNumeracao("AAAAA");
 		contaCorrente1.setSaldo(10D);
 		cliente1.setContaCorrente(contaCorrente1);
 		ContaPoupanca contaPoupanca1 = new ContaPoupanca();
 		contaPoupanca1.setCliente(cliente1);
-		contaPoupanca1.setNumeracao("BBBBB");
+		contaPoupanca1.setNumeracao("AAAAA");
 		contaPoupanca1.setSaldo(10D);
 		cliente1.setContaPoupanca(contaPoupanca1);
 		
@@ -84,6 +86,7 @@ public enum Singleton {
 		
 		// logDepositoDAO
 		this.logDepositoDAO = new LogDepositoDAO();
+		this.logTedDAO = new LogTedDAO();
 
 	}
 	
@@ -97,6 +100,10 @@ public enum Singleton {
 	
 	public ContaCorrenteDAO getContaCorrenteDAO() {
 		return this.contaCorrenteDAO;
+	}
+
+	public LogTedDAO getLogTedDAO() {
+		return logTedDAO;
 	}
 
 }

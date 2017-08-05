@@ -15,14 +15,16 @@ import com.mkyong.entidades.Banco;
 import com.mkyong.entidades.Cliente;
 import com.mkyong.entidades.ContaCorrente;
 import com.mkyong.entidades.LogDeposito;
+import com.mkyong.entidades.LogTed;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 
-import common.StatusDeposito;
+import common.StatusTransacao;
 import conversor.ClienteConversor;
 import dao.ClienteDAO;
 import dao.ContaCorrenteDAO;
+import dao.LogTedDAO;
 import dto.ContaCorrenteDTO;
 import factory.Singleton;
 import request.DepositoRequest;
@@ -32,13 +34,14 @@ import request.TedRequest;
 public class ClienteService {
 
 	private static final String TED_RECEIVER_NAME = "tedReceiver";
-	private static final int STATUS_CODE_NOT_FOUND = 404;
 	private static final int STATUS_CODE_OK = 200;
+	private static final int STATUS_CODE_NOT_FOUND = 404;
+	private static final int STATUS_CODE_UNPROCESSABLE_ENTITY = 422;
 	private static final int STATUS_CODE_ERROR = 500;
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/{id}/saldoContaCorrente")
+	@Path("/saldoContaCorrente/{id}")
 	public Response consultarSaldo(final @PathParam("id") String id) {
 		Response resposta = null;
 		ClienteDAO clienteDAO = Singleton.INSTANCE.getClienteDAO();
@@ -70,18 +73,18 @@ public class ClienteService {
 			ContaCorrente contaCorrente = contaCorrenteDAO.findByNumero(depositoRequest.getNumeroConta());
 			if (contaCorrente == null) {
 				resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
-				logDeposito.setStatus(StatusDeposito.CONTA_NAO_EXISTE);
+				logDeposito.setStatus(StatusTransacao.CONTA_NAO_EXISTE);
 			}
 			else {
 				double saldoAntesDoDeposito = contaCorrente.getSaldo();
 				contaCorrente.setSaldo(saldoAntesDoDeposito + depositoRequest.getValor());
 				resposta = Response.status(STATUS_CODE_OK).build();
-				logDeposito.setStatus(StatusDeposito.SUCESSO);
+				logDeposito.setStatus(StatusTransacao.SUCESSO);
 			}
 		}
 		catch (Exception e) {
 			resposta = Response.status(STATUS_CODE_ERROR).build();
-			logDeposito.setStatus(StatusDeposito.EXCECAO);
+			logDeposito.setStatus(StatusTransacao.ERRO);
 			logDeposito.setMsgExcecao(e.getMessage());
 		}
 		Singleton.INSTANCE.getLogDepositoDAO().add(logDeposito);
@@ -93,28 +96,72 @@ public class ClienteService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response tedSender(final TedRequest tedRequest) {
 		Response response = null;
+		// log
+		LogTed logTed = new LogTed();
+		logTed.setHorario(new Date());
+		logTed.setIdBancoDestino(tedRequest.getIdBancoDestino());
+		logTed.setNumeroContaDestino(tedRequest.getNumeroContaDestino());
+		logTed.setNumeroContaOrigem(tedRequest.getNumeroContaOrigem());
+		logTed.setValor(tedRequest.getValor());
+		LogTedDAO logTedDAO = Singleton.INSTANCE.getLogTedDAO();
+		
+		// verifica endereco do banco de destino atraves do banco central
 		Client client = Client.create();
 		WebResource webResourceBancoCentral = client
 		   .resource("http://localhost:10080/RESTfulExample/rest/banco/" + tedRequest.getIdBancoDestino());
 		ClientResponse responseBancoCentral = webResourceBancoCentral.accept("application/json")
                    .get(ClientResponse.class);
 
+		// valida resposta do banco central
 		if (responseBancoCentral.getStatus() != STATUS_CODE_OK) {
-		   throw new RuntimeException("Failed : HTTP error code : "
-			+ responseBancoCentral.getStatus());
+			logTed.setStatus(StatusTransacao.ERRO);
+			String msgErro = "Erro na comunicação com o banco central.";
+			logTed.setMsgErro(msgErro);
+			logTedDAO.add(logTed);
+			return Response.status(STATUS_CODE_ERROR).entity(msgErro).build();
 		}
 		
+		// valida se conta origem existe
+		ContaCorrente contaOrigem =
+				Singleton.INSTANCE.getContaCorrenteDAO().findByNumero(tedRequest.getNumeroContaOrigem());
+		if (contaOrigem == null) {
+			logTed.setStatus(StatusTransacao.ERRO);
+			String msgErro = "Conta origem não encontrada.";
+			logTed.setMsgErro(msgErro);
+			logTedDAO.add(logTed);
+			return Response.status(STATUS_CODE_NOT_FOUND).entity(msgErro).build();
+		}
+		
+		// valida se conta origem tem saldo suficiente para o ted
+		if (!contaOrigem.temSaldoParaTransferencia(tedRequest.getValor())) {
+			String msgErro = "Conta não tem saldo suficiente para a transferência.";
+			logTed.setStatus(StatusTransacao.ERRO);
+			logTed.setMsgErro(msgErro);
+			logTedDAO.add(logTed);
+			return Response.status(STATUS_CODE_UNPROCESSABLE_ENTITY).entity(msgErro).build();
+		}
+
+		// envia requisicao para outro banco
 		Banco entity = responseBancoCentral.getEntity(Banco.class);
 		String endereco = entity.getEndereco();
-		
 		WebResource webResourceOutroBanco = client
-		   .resource(endereco + TED_RECEIVER_NAME);
-
+				.resource(endereco + TED_RECEIVER_NAME);
 		ClientResponse responseOutroBanco = webResourceOutroBanco
 				.type("application/json")
 				.accept("application/json")
 				.post(ClientResponse.class, tedRequest);
 		
+		// valida resposta do outro banco
+		if (responseOutroBanco.getStatus() != STATUS_CODE_OK) {
+			logTed.setStatus(StatusTransacao.ERRO);
+			String msgErro = "Erro na comunicação com o outro banco.";
+			logTed.setMsgErro(msgErro);
+			logTedDAO.add(logTed);
+			return Response.status(STATUS_CODE_ERROR).entity(msgErro).build();
+		}
+
+		logTed.setStatus(StatusTransacao.SUCESSO);
+		logTedDAO.add(logTed);
 		response = Response.status(responseOutroBanco.getStatus()).build();
 		return response;
 	}
@@ -124,27 +171,29 @@ public class ClienteService {
 	@Path("/" + TED_RECEIVER_NAME)
 	public Response tedReceiver(final TedRequest tedRequest) {
 		Response resposta = null;
-		try {
-			ContaCorrenteDAO contaCorrenteDAO = Singleton.INSTANCE.getContaCorrenteDAO();
-			ContaCorrente conta = contaCorrenteDAO.findByNumero(tedRequest.getNumeroContaDestino());
-			if (conta == null) {
-				resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
-				// TODO: fazer log TED
-				//				logDeposito.setStatus(StatusDeposito.CONTA_NAO_EXISTE);
-			}
-			else {
-				double saldoAntesDoTED = conta.getSaldo();
-				conta.setSaldo(saldoAntesDoTED + tedRequest.getValor());
-				resposta = Response.status(STATUS_CODE_OK).build();
-				//			logDeposito.setStatus(StatusDeposito.SUCESSO);
-			}
+
+		// log
+		LogTed logTed = new LogTed();
+		logTed.setHorario(new Date());
+		logTed.setIdBancoDestino(tedRequest.getIdBancoDestino());
+		logTed.setNumeroContaDestino(tedRequest.getNumeroContaDestino());
+		logTed.setNumeroContaOrigem(tedRequest.getNumeroContaOrigem());
+		logTed.setValor(tedRequest.getValor());
+
+		// verifica se conta existe
+		ContaCorrenteDAO contaCorrenteDAO = Singleton.INSTANCE.getContaCorrenteDAO();
+		ContaCorrente conta = contaCorrenteDAO.findByNumero(tedRequest.getNumeroContaDestino());
+		if (conta == null) {
+			resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
+			logTed.setStatus(StatusTransacao.CONTA_NAO_EXISTE);
 		}
-		catch (Exception e) {
-			resposta = Response.status(STATUS_CODE_ERROR).build();
-//			logDeposito.setStatus(StatusDeposito.EXCECAO);
-//			logDeposito.setMsgExcecao(e.getMessage());
+		else {
+			double saldoAntesDoTED = conta.getSaldo();
+			conta.setSaldo(saldoAntesDoTED + tedRequest.getValor());
+			resposta = Response.status(STATUS_CODE_OK).build();
+			logTed.setStatus(StatusTransacao.SUCESSO);
 		}
-//		Singleton.INSTANCE.getLogDepositoDAO().add(logDeposito);
+		Singleton.INSTANCE.getLogTedDAO().add(logTed);
 		return resposta;
 	}
 
