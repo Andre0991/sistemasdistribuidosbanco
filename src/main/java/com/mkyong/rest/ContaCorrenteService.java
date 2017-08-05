@@ -31,7 +31,7 @@ import factory.Singleton;
 import request.DepositoRequest;
 import request.SaqueRequest;
 import request.TedRequest;
-import request.TransIntraBanco;
+import request.Transferencia;
 
 @Path("/contaCorrente")
 public class ContaCorrenteService {
@@ -95,40 +95,6 @@ public class ContaCorrenteService {
 	}
 	
 	@POST
-	@Path("/saque")
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Response saqueContaCorrente(final SaqueRequest saqueRequest) {
-		// log
-		LogSaque logSaque = new LogSaque();
-		logSaque.setNumeroConta(saqueRequest.getNumeroConta());
-		logSaque.setHorario(new Date());
-		logSaque.setValor(saqueRequest.getValor());
-		Response resposta;
-
-		try {
-			ContaCorrenteDAO contaCorrenteDAO = Singleton.INSTANCE.getContaCorrenteDAO();
-			ContaCorrente contaCorrente = contaCorrenteDAO.findByNumero(saqueRequest.getNumeroConta());
-			if (contaCorrente == null) {
-				resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
-				logSaque.setStatus(StatusTransacao.CONTA_NAO_EXISTE);
-			}
-			else {
-				double saldoAntesDoSaque = contaCorrente.getSaldo();
-				contaCorrente.setSaldo(saldoAntesDoSaque - saqueRequest.getValor());
-				resposta = Response.status(STATUS_CODE_OK).build();
-				logSaque.setStatus(StatusTransacao.SUCESSO);
-			}
-		}
-		catch (Exception e) {
-			resposta = Response.status(STATUS_CODE_ERROR).build();
-			logSaque.setStatus(StatusTransacao.ERRO);
-			logSaque.setMsgExcecao(e.getMessage());
-		}
-		Singleton.INSTANCE.getLogSaqueDAO().add(logSaque);
-		return resposta;
-	}
-	
-	@POST
 	@Path("/tedSender")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response tedSender(final TedRequest tedRequest) {
@@ -152,7 +118,7 @@ public class ContaCorrenteService {
 		// valida resposta do banco central
 		if (responseBancoCentral.getStatus() != STATUS_CODE_OK) {
 			logTed.setStatus(StatusTransacao.ERRO);
-			String msgErro = "Erro na comunicaÃ§Ã£o com o banco central.";
+			String msgErro = "Erro na comunicação com o banco central.";
 			logTed.setMsgErro(msgErro);
 			logTedDAO.add(logTed);
 			return Response.status(STATUS_CODE_ERROR).entity(msgErro).build();
@@ -163,7 +129,7 @@ public class ContaCorrenteService {
 				Singleton.INSTANCE.getContaCorrenteDAO().findByNumero(tedRequest.getNumeroContaOrigem());
 		if (contaOrigem == null) {
 			logTed.setStatus(StatusTransacao.ERRO);
-			String msgErro = "Conta origem nÃ£o encontrada.";
+			String msgErro = "Conta origem não encontrada.";
 			logTed.setMsgErro(msgErro);
 			logTedDAO.add(logTed);
 			return Response.status(STATUS_CODE_NOT_FOUND).entity(msgErro).build();
@@ -171,7 +137,7 @@ public class ContaCorrenteService {
 		
 		// valida se conta origem tem saldo suficiente para o ted
 		if (!contaOrigem.temSaldoParaTransferencia(tedRequest.getValor())) {
-			String msgErro = "Conta nÃ£o tem saldo suficiente para a transferÃªncia.";
+			String msgErro = "Conta não tem saldo suficiente para a transferência.";
 			logTed.setStatus(StatusTransacao.ERRO);
 			logTed.setMsgErro(msgErro);
 			logTedDAO.add(logTed);
@@ -191,7 +157,7 @@ public class ContaCorrenteService {
 		// valida resposta do outro banco
 		if (responseOutroBanco.getStatus() != STATUS_CODE_OK) {
 			logTed.setStatus(StatusTransacao.ERRO);
-			String msgErro = "Erro na comunicaÃ§Ã£o com o outro banco.";
+			String msgErro = "Erro na comunicação com o outro banco.";
 			logTed.setMsgErro(msgErro);
 			logTedDAO.add(logTed);
 			return Response.status(STATUS_CODE_ERROR).entity(msgErro).build();
@@ -238,28 +204,75 @@ public class ContaCorrenteService {
 	@POST
 	@Path("/transferencia")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response transferencia(final TransIntraBanco transIntraBanco) {
+	public Response transferencia(final Transferencia transferencia) {
 
 		Response resposta;
 
 		try {
 			ContaCorrenteDAO contaCorrenteDAO = Singleton.INSTANCE.getContaCorrenteDAO();
-			ContaCorrente contaCorrente = contaCorrenteDAO.findByNumero(transIntraBanco.getNumeracao());
-			if (contaCorrente == null) {
+			ContaCorrente contaCorrenteDestino = contaCorrenteDAO.findByNumero(transferencia.getContaDestino());
+			if (contaCorrenteDestino == null) {
 				resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
 			}
 			else {
-				double saldoAntesDaTransferencia = contaCorrente.getSaldo();
-				contaCorrente.setSaldo(saldoAntesDaTransferencia + transIntraBanco.getValor());
+				double saldoAntesDaTransferencia = contaCorrenteDestino.getSaldo();
+				contaCorrenteDestino.setSaldo(saldoAntesDaTransferencia + transferencia.getValor());
 				resposta = Response.status(STATUS_CODE_OK).build();
+
+				ContaCorrente contaCorrenteOrigem = contaCorrenteDAO.findByNumero(transferencia.getContaOrigem());
+				if (contaCorrenteOrigem == null) {
+					resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
+				}
+				else {
+					double saldoOrigemAntesDaTransferencia = contaCorrenteOrigem.getSaldo();
+					contaCorrenteOrigem.setSaldo(saldoOrigemAntesDaTransferencia - transferencia.getValor());
+					resposta = Response.status(STATUS_CODE_OK).build();
+				}
+
 			}
+
 		}
 		catch (Exception e) {
 			resposta = Response.status(STATUS_CODE_ERROR).build();
+
 		}
 		return resposta;
 	}
 	
-			
+	@POST
+	@Path("/saque")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response saqueContaCorrente(final SaqueRequest saqueRequest) {
+		// log
+		LogSaque logSaque = new LogSaque();
+		logSaque.setNumeroConta(saqueRequest.getNumeroConta());
+		logSaque.setHorario(new Date());
+		logSaque.setValor(saqueRequest.getValor());
+		Response resposta;
+
+		try {
+			ContaCorrenteDAO contaCorrenteDAO = Singleton.INSTANCE.getContaCorrenteDAO();
+			ContaCorrente contaCorrente = contaCorrenteDAO.findByNumero(saqueRequest.getNumeroConta());
+			if (contaCorrente == null) {
+				resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
+				logSaque.setStatus(StatusTransacao.CONTA_NAO_EXISTE);
+			}
+			else {
+				double saldoAntesDoSaque = contaCorrente.getSaldo();
+				contaCorrente.setSaldo(saldoAntesDoSaque - saqueRequest.getValor());
+				resposta = Response.status(STATUS_CODE_OK).build();
+				logSaque.setStatus(StatusTransacao.SUCESSO);
+			}
+		}
+		catch (Exception e) {
+			resposta = Response.status(STATUS_CODE_ERROR).build();
+			logSaque.setStatus(StatusTransacao.ERRO);
+			logSaque.setMsgExcecao(e.getMessage());
+		}
+		Singleton.INSTANCE.getLogSaqueDAO().add(logSaque);
+		return resposta;
+	}
 }
+	
+			
 
