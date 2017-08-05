@@ -15,6 +15,7 @@ import com.mkyong.entidades.Banco;
 import com.mkyong.entidades.Cliente;
 import com.mkyong.entidades.ContaCorrente;
 import com.mkyong.entidades.LogDeposito;
+import com.mkyong.entidades.LogSaque;
 import com.mkyong.entidades.LogTed;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -28,6 +29,7 @@ import dao.LogTedDAO;
 import dto.ContaCorrenteDTO;
 import factory.Singleton;
 import request.DepositoRequest;
+import request.SaqueRequest;
 import request.TedRequest;
 import request.TransIntraBanco;
 
@@ -89,6 +91,40 @@ public class ContaCorrenteService {
 			logDeposito.setMsgExcecao(e.getMessage());
 		}
 		Singleton.INSTANCE.getLogDepositoDAO().add(logDeposito);
+		return resposta;
+	}
+	
+	@POST
+	@Path("/saque")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response saqueContaCorrente(final SaqueRequest saqueRequest) {
+		// log
+		LogSaque logSaque = new LogSaque();
+		logSaque.setNumeroConta(saqueRequest.getNumeroConta());
+		logSaque.setHorario(new Date());
+		logSaque.setValor(saqueRequest.getValor());
+		Response resposta;
+
+		try {
+			ContaCorrenteDAO contaCorrenteDAO = Singleton.INSTANCE.getContaCorrenteDAO();
+			ContaCorrente contaCorrente = contaCorrenteDAO.findByNumero(saqueRequest.getNumeroConta());
+			if (contaCorrente == null) {
+				resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
+				logSaque.setStatus(StatusTransacao.CONTA_NAO_EXISTE);
+			}
+			else {
+				double saldoAntesDoSaque = contaCorrente.getSaldo();
+				contaCorrente.setSaldo(saldoAntesDoSaque - saqueRequest.getValor());
+				resposta = Response.status(STATUS_CODE_OK).build();
+				logSaque.setStatus(StatusTransacao.SUCESSO);
+			}
+		}
+		catch (Exception e) {
+			resposta = Response.status(STATUS_CODE_ERROR).build();
+			logSaque.setStatus(StatusTransacao.ERRO);
+			logSaque.setMsgExcecao(e.getMessage());
+		}
+		Singleton.INSTANCE.getLogSaqueDAO().add(logSaque);
 		return resposta;
 	}
 	
