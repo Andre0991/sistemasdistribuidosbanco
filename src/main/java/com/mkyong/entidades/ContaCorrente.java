@@ -1,15 +1,24 @@
 package com.mkyong.entidades;
 
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class ContaCorrente {
 	
 	private Cliente cliente;
-
 	private double saldo;
-	
 	private String numeracao;
+	private List<LogTransacao> historicoTransacoes;
+
+	public List<LogTransacao> getHistoricoTransacoes() {
+		return historicoTransacoes;
+	}
+
+	public void setHistoricoTransacoes(List<LogTransacao> historicoTransacoes) {
+		this.historicoTransacoes = historicoTransacoes;
+	}
 
 	public Cliente getCliente() {
 		return cliente;
@@ -37,6 +46,10 @@ public class ContaCorrente {
 	
 	public boolean temSaldoParaTransferencia(Double valorTransferencia) {
 		return this.saldo >= valorTransferencia;
+	}
+	
+	public void addTransacao(LogTransacao logTransacao) {
+		this.historicoTransacoes.add(logTransacao);
 	}
 
 }

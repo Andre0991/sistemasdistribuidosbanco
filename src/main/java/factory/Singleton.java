@@ -6,9 +6,11 @@ import java.util.List;
 import com.mkyong.entidades.Cliente;
 import com.mkyong.entidades.ContaCorrente;
 import com.mkyong.entidades.ContaPoupanca;
+import com.mkyong.entidades.LogTransacao;
 
 import dao.ClienteDAO;
 import dao.ContaCorrenteDAO;
+import dao.LogConsultaSaldoDAO;
 import dao.LogDepositoDAO;
 import dao.LogTedDAO;
 
@@ -19,6 +21,8 @@ public enum Singleton {
 	private ContaCorrenteDAO contaCorrenteDAO;
 	private LogDepositoDAO logDepositoDAO;
 	private LogTedDAO logTedDAO;
+	private LogConsultaSaldoDAO logConsultaSaldoDAO;
+
 
 	private Singleton() {
 
@@ -32,6 +36,8 @@ public enum Singleton {
 		contaCorrente1.setCliente(cliente1);
 		contaCorrente1.setNumeracao("AAAAA");
 		contaCorrente1.setSaldo(10D);
+		List<LogTransacao> transacoesCC1 = new ArrayList<LogTransacao>();
+		contaCorrente1.setHistoricoTransacoes(transacoesCC1);
 		cliente1.setContaCorrente(contaCorrente1);
 		ContaPoupanca contaPoupanca1 = new ContaPoupanca();
 		contaPoupanca1.setCliente(cliente1);
@@ -48,6 +54,8 @@ public enum Singleton {
 		contaCorrente2.setCliente(cliente2);
 		contaCorrente2.setNumeracao("BBBBB");
 		contaCorrente2.setSaldo(20D);
+		List<LogTransacao> transacoesCC2 = new ArrayList<LogTransacao>();
+		contaCorrente2.setHistoricoTransacoes(transacoesCC2);
 		cliente2.setContaCorrente(contaCorrente2);
 		ContaPoupanca contaPoupanca2 = new ContaPoupanca();
 		contaPoupanca2.setCliente(cliente2);
@@ -64,6 +72,8 @@ public enum Singleton {
 		contaCorrente3.setCliente(cliente3);
 		contaCorrente3.setNumeracao("CCCCC");
 		contaCorrente3.setSaldo(30D);
+		List<LogTransacao> transacoesCC3 = new ArrayList<LogTransacao>();
+		contaCorrente3.setHistoricoTransacoes(transacoesCC3);
 		cliente3.setContaCorrente(contaCorrente3);
 		ContaPoupanca contaPoupanca3 = new ContaPoupanca();
 		contaPoupanca3.setCliente(cliente3);
@@ -87,6 +97,7 @@ public enum Singleton {
 		// logDepositoDAO
 		this.logDepositoDAO = new LogDepositoDAO();
 		this.logTedDAO = new LogTedDAO();
+		this.logConsultaSaldoDAO = new LogConsultaSaldoDAO();
 
 	}
 	
@@ -104,6 +115,10 @@ public enum Singleton {
 
 	public LogTedDAO getLogTedDAO() {
 		return logTedDAO;
+	}
+
+	public LogConsultaSaldoDAO getLogConsultaSaldoDAO() {
+		return logConsultaSaldoDAO;
 	}
 
 }

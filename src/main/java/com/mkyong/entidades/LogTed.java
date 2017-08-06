@@ -7,16 +7,26 @@ import javax.xml.bind.annotation.XmlRootElement;
 import common.StatusTransacao;
 
 @XmlRootElement
-public class LogTed {
+public class LogTed extends LogTransacao {
 
 	private int idBancoDestino;
 	private double valor;
 	private String numeroContaOrigem;
 	private String numeroContaDestino;
 
+	public String getTipo() {
+		return tipo;
+	}
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
+	}
+	public String getMsgErro() {
+		return msgErro;
+	}
 	private Date horario;
 	private StatusTransacao status;
 	private String msgErro;
+	private String tipo = "ted";
 
 	public int getIdBancoDestino() {
 		return idBancoDestino;

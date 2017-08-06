@@ -1,6 +1,7 @@
 package com.mkyong.rest;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -14,8 +15,10 @@ import javax.ws.rs.core.Response;
 import com.mkyong.entidades.Banco;
 import com.mkyong.entidades.Cliente;
 import com.mkyong.entidades.ContaCorrente;
+import com.mkyong.entidades.LogConsultaSaldo;
 import com.mkyong.entidades.LogDeposito;
 import com.mkyong.entidades.LogTed;
+import com.mkyong.entidades.LogTransacao;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -24,15 +27,18 @@ import common.StatusTransacao;
 import conversor.ClienteConversor;
 import dao.ClienteDAO;
 import dao.ContaCorrenteDAO;
+import dao.LogConsultaSaldoDAO;
 import dao.LogTedDAO;
 import dto.ContaCorrenteDTO;
 import factory.Singleton;
 import request.DepositoRequest;
 import request.TedRequest;
 import request.TransIntraBanco;
+import response.ErrorResponse;
 
 @Path("/contaCorrente")
 public class ContaCorrenteService {
+
 
 	private static final String TED_RECEIVER_NAME = "tedReceiver";
 	private static final int STATUS_CODE_OK = 200;
@@ -40,28 +46,37 @@ public class ContaCorrenteService {
 	private static final int STATUS_CODE_UNPROCESSABLE_ENTITY = 422;
 	private static final int STATUS_CODE_ERROR = 500;
 
+	private static final String CONTA_INFORMADA_INEXISTENTE_MSG = "Conta informada não existe";
+
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/saldo/{id}")
 	public Response consultarSaldo(final @PathParam("id") String id) {
 		Response resposta = null;
 		ClienteDAO clienteDAO = Singleton.INSTANCE.getClienteDAO();
+		LogConsultaSaldoDAO logConsultaSaldoDAO = Singleton.INSTANCE.getLogConsultaSaldoDAO();
+		LogConsultaSaldo log = new LogConsultaSaldo();
+		log.setHorario(new Date());
+		log.setIdCliente(id);
 
 		Cliente cliente = clienteDAO.findById(Long.parseLong(id));
 		if (cliente == null) {
 			resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
+			log.setStatus(STATUS_CODE_NOT_FOUND);
 		}
 		else {
 			ContaCorrenteDTO contaCorrenteDTO = new ClienteConversor().convertClienteToContaCorrenteDTO(cliente);
 			resposta = Response.status(STATUS_CODE_OK).entity(contaCorrenteDTO).build();
+			log.setStatus(STATUS_CODE_OK);
 		}
+		logConsultaSaldoDAO.add(log);
 		return resposta;
 	}
 
 	@POST
 	@Path("/deposito")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response depositoContaCorrente(final DepositoRequest depositoRequest) {
+	public Response deposito(final DepositoRequest depositoRequest) {
 		// log
 		LogDeposito logDeposito = new LogDeposito();
 		logDeposito.setNumeroConta(depositoRequest.getNumeroConta());
@@ -70,6 +85,7 @@ public class ContaCorrenteService {
 		Response resposta;
 
 		try {
+			// verifica se conta existe
 			ContaCorrenteDAO contaCorrenteDAO = Singleton.INSTANCE.getContaCorrenteDAO();
 			ContaCorrente contaCorrente = contaCorrenteDAO.findByNumero(depositoRequest.getNumeroConta());
 			if (contaCorrente == null) {
@@ -81,6 +97,7 @@ public class ContaCorrenteService {
 				contaCorrente.setSaldo(saldoAntesDoDeposito + depositoRequest.getValor());
 				resposta = Response.status(STATUS_CODE_OK).build();
 				logDeposito.setStatus(StatusTransacao.SUCESSO);
+				contaCorrente.addTransacao(logDeposito);
 			}
 		}
 		catch (Exception e) {
@@ -92,6 +109,7 @@ public class ContaCorrenteService {
 		return resposta;
 	}
 	
+	// TODO: se conta B nao existe, mas conta A existe, desconta do A, mas B nao, é descontado do A e ocorre erro
 	@POST
 	@Path("/tedSender")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -146,7 +164,7 @@ public class ContaCorrenteService {
 		Banco entity = responseBancoCentral.getEntity(Banco.class);
 		String endereco = entity.getEndereco();
 		WebResource webResourceOutroBanco = client
-				.resource(endereco + TED_RECEIVER_NAME);
+				.resource(endereco + "contaCorrente/" + TED_RECEIVER_NAME);
 		ClientResponse responseOutroBanco = webResourceOutroBanco
 				.type("application/json")
 				.accept("application/json")
@@ -163,6 +181,7 @@ public class ContaCorrenteService {
 
 		logTed.setStatus(StatusTransacao.SUCESSO);
 		logTedDAO.add(logTed);
+		contaOrigem.addTransacao(logTed);
 		response = Response.status(responseOutroBanco.getStatus()).build();
 		return response;
 	}
@@ -183,16 +202,20 @@ public class ContaCorrenteService {
 
 		// verifica se conta existe
 		ContaCorrenteDAO contaCorrenteDAO = Singleton.INSTANCE.getContaCorrenteDAO();
-		ContaCorrente conta = contaCorrenteDAO.findByNumero(tedRequest.getNumeroContaDestino());
-		if (conta == null) {
-			resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
+		ContaCorrente contaDestino = contaCorrenteDAO.findByNumero(tedRequest.getNumeroContaDestino());
+		if (contaDestino == null) {
+			resposta = Response
+					.status(STATUS_CODE_NOT_FOUND)
+					.entity(new ErrorResponse(STATUS_CODE_NOT_FOUND, CONTA_INFORMADA_INEXISTENTE_MSG))
+					.build();
 			logTed.setStatus(StatusTransacao.CONTA_NAO_EXISTE);
 		}
 		else {
-			double saldoAntesDoTED = conta.getSaldo();
-			conta.setSaldo(saldoAntesDoTED + tedRequest.getValor());
+			double saldoAntesDoTED = contaDestino.getSaldo();
+			contaDestino.setSaldo(saldoAntesDoTED + tedRequest.getValor());
 			resposta = Response.status(STATUS_CODE_OK).build();
 			logTed.setStatus(StatusTransacao.SUCESSO);
+			contaDestino.addTransacao(logTed);
 		}
 		Singleton.INSTANCE.getLogTedDAO().add(logTed);
 		return resposta;
@@ -224,6 +247,23 @@ public class ContaCorrenteService {
 		return resposta;
 	}
 	
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/extrato/{id}")
+	public Response extrato(final @PathParam("id") String id) {
+		Response resposta = null;
+		ClienteDAO clienteDAO = Singleton.INSTANCE.getClienteDAO();
+
+		Cliente cliente = clienteDAO.findById(Long.parseLong(id));
+		if (cliente == null) {
+			resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
+		}
+		else {
+			List<LogTransacao> historicoTransacoes = cliente.getContaCorrente().getHistoricoTransacoes();
+			resposta = Response.status(STATUS_CODE_OK).entity(historicoTransacoes).build();
+		}
+		return resposta;
+	}
 			
 }
 
