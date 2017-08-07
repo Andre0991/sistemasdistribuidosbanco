@@ -4,9 +4,11 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonBackReference;
+
 @XmlRootElement
 public class ContaCorrente {
-	
+
 	private Cliente cliente;
 	private double saldo;
 	private String numeracao;
@@ -20,6 +22,7 @@ public class ContaCorrente {
 		this.historicoTransacoes = historicoTransacoes;
 	}
 
+	@JsonBackReference
 	public Cliente getCliente() {
 		return cliente;
 	}
