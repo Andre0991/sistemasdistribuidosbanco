@@ -24,4 +24,8 @@ public class ClienteDAO {
 		return clienteRetorno;
 	}
 
+	public List<Cliente> findAll() {
+		return this.clientesMock;
+	}
+
 }

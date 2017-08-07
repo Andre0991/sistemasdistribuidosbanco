@@ -27,14 +27,14 @@ public enum SingletonBanco {
 		Banco banco1 = new Banco();
 		banco1.setNome("Banco1");
 		banco1.setId(1);
-		banco1.setEndereco("http://localhost:8080/RESTfulExample/rest/cliente/");
+		banco1.setEndereco("http://localhost:8080/RESTfulExample/rest/");
 		
 		
 		// banco2
 		Banco banco2 = new Banco();
 		banco2.setNome("Banco2");
 		banco2.setId(2);
-		banco2.setEndereco("http://localhost:9080/RESTfulExample/rest/cliente/");
+		banco2.setEndereco("http://localhost:9080/RESTfulExample/rest/");
 		
 
 		// bancoDAO

@@ -4,10 +4,15 @@ import java.util.Date;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonTypeInfo;
+import org.codehaus.jackson.annotate.JsonTypeInfo.As;
+import org.codehaus.jackson.annotate.JsonTypeName;
+import org.codehaus.jackson.map.ObjectMapper;
+
 import common.StatusTransacao;
 
 @XmlRootElement
-public class LogDeposito {
+public class LogDeposito extends LogTransacao {
 	
 	private Double valor;
 	private String numeroConta;
@@ -15,6 +20,15 @@ public class LogDeposito {
 	private Date horario;
 	private StatusTransacao status;
 	private String msgExcecao;
+	private String tipo = "deposito";
+
+	public String getTipo() {
+		return tipo;
+	}
+
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
+	}
 
 	public Double getValor() {
 		return valor;

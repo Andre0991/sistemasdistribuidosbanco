@@ -2,6 +2,8 @@ package com.mkyong.entidades;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonManagedReference;
+
 @XmlRootElement
 public class Cliente {
 	
@@ -11,8 +13,10 @@ public class Cliente {
 	
 	private Long id;
 	
+    @JsonManagedReference
 	private ContaCorrente contaCorrente;
 
+    @JsonManagedReference
 	private ContaPoupanca contaPoupanca;
 
 	public String getNome() {
