@@ -17,6 +17,7 @@ import com.mkyong.entidades.ContaCorrente;
 import com.mkyong.entidades.LogDeposito;
 import com.mkyong.entidades.LogSaque;
 import com.mkyong.entidades.LogTed;
+import com.mkyong.entidades.LogTransferencia;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -205,7 +206,13 @@ public class ContaCorrenteService {
 	@Path("/transferencia")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response transferencia(final Transferencia transferencia) {
-
+		//log
+		LogTransferencia logTransferencia = new LogTransferencia();
+		logTransferencia.setHorario(new Date());
+		logTransferencia.setContaDestino(transferencia.getContaDestino());
+		logTransferencia.setContaOrigem(transferencia.getContaOrigem());
+		logTransferencia.setValor(transferencia.getValor());
+		
 		Response resposta;
 
 		try {
@@ -213,20 +220,24 @@ public class ContaCorrenteService {
 			ContaCorrente contaCorrenteDestino = contaCorrenteDAO.findByNumero(transferencia.getContaDestino());
 			if (contaCorrenteDestino == null) {
 				resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
+				logTransferencia.setStatus(StatusTransacao.CONTA_NAO_EXISTE);
 			}
 			else {
 				double saldoAntesDaTransferencia = contaCorrenteDestino.getSaldo();
 				contaCorrenteDestino.setSaldo(saldoAntesDaTransferencia + transferencia.getValor());
 				resposta = Response.status(STATUS_CODE_OK).build();
+				logTransferencia.setStatus(StatusTransacao.SUCESSO);
 
 				ContaCorrente contaCorrenteOrigem = contaCorrenteDAO.findByNumero(transferencia.getContaOrigem());
 				if (contaCorrenteOrigem == null) {
 					resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
+					logTransferencia.setStatus(StatusTransacao.CONTA_NAO_EXISTE);
 				}
 				else {
 					double saldoOrigemAntesDaTransferencia = contaCorrenteOrigem.getSaldo();
 					contaCorrenteOrigem.setSaldo(saldoOrigemAntesDaTransferencia - transferencia.getValor());
 					resposta = Response.status(STATUS_CODE_OK).build();
+					logTransferencia.setStatus(StatusTransacao.SUCESSO);
 				}
 
 			}
@@ -234,6 +245,8 @@ public class ContaCorrenteService {
 		}
 		catch (Exception e) {
 			resposta = Response.status(STATUS_CODE_ERROR).build();
+			logTransferencia.setStatus(StatusTransacao.ERRO);
+			logTransferencia.setMsgExcecao(e.getMessage());
 
 		}
 		return resposta;

@@ -11,6 +11,7 @@ import dao.ClienteDAO;
 import dao.ContaCorrenteDAO;
 import dao.LogDepositoDAO;
 import dao.LogTedDAO;
+import dao.LogTransferenciaDAO;
 import dao.LogSaqueDAO;
 
 public enum Singleton {
@@ -21,6 +22,7 @@ public enum Singleton {
 	private LogDepositoDAO logDepositoDAO;
 	private LogTedDAO logTedDAO;
 	private LogSaqueDAO logSaqueDAO;
+	private LogTransferenciaDAO logTransferenciaDAO;
 
 	private Singleton() {
 
@@ -86,11 +88,16 @@ public enum Singleton {
 		contasCorrentes.add(contaCorrente3);
 		this.contaCorrenteDAO = new ContaCorrenteDAO(contasCorrentes);
 		
-		// logDepositoDAO
+		// logDAO
 		this.logDepositoDAO = new LogDepositoDAO();
 		this.logTedDAO = new LogTedDAO();
 		this.logSaqueDAO = new LogSaqueDAO();
+		this.logTransferenciaDAO = new LogTransferenciaDAO();
 
+	}
+	
+	public LogTransferenciaDAO getLogTransferenciaDAO() {
+		return logTransferenciaDAO;
 	}
 	
 	public LogDepositoDAO getLogDepositoDAO() {
