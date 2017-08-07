@@ -54,6 +54,8 @@ public class Cliente {
 	public void setContaPoupanca(ContaPoupanca contaPoupanca) {
 		this.contaPoupanca = contaPoupanca;
 	}
+	
+	
 
 
 }
