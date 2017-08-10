@@ -31,6 +31,21 @@ public class ClienteService {
 	}
 
 	@GET
+	@Path("/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response findById(final @PathParam("id") String id) {
+		Response response;
+		Cliente cliente = Singleton.INSTANCE.getClienteDAO().findById(Long.parseLong(id));
+		if (cliente == null) {
+			response = Response.status(STATUS_CODE_NOT_FOUND).build();
+		}
+		else {
+			response = Response.status(STATUS_CODE_OK).entity(cliente).build();
+		}
+		return response;
+	}
+
+	@GET
 	@Path("/depositos/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAllDepositosFromCliente(final @PathParam("id") String id) {
