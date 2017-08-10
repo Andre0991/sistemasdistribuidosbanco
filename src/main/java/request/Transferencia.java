@@ -2,7 +2,7 @@ package request;
 
 public class Transferencia {
 
-		private double valor;
+		private Double valor;
 		private String contaOrigem;
 		private String contaDestino;
 		
