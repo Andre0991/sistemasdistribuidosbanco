@@ -36,7 +36,7 @@ import factory.Singleton;
 import request.DepositoRequest;
 import request.TedRequest;
 import request.SaqueRequest;
-import request.Transferencia;
+import request.TransferenciaRequest;
 import response.ErrorResponse;
 
 @Path("/contaCorrente")
@@ -227,53 +227,51 @@ public class ContaCorrenteService {
 		@POST
 	@Path("/transferencia")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response transferencia(final Transferencia transferencia) {
-		//log
-		LogTransferencia logTransferencia = new LogTransferencia();
-		logTransferencia.setHorario(new Date());
-		logTransferencia.setContaDestino(transferencia.getContaDestino());
-		logTransferencia.setContaOrigem(transferencia.getContaOrigem());
-		logTransferencia.setValor(transferencia.getValor());
-		
-		Response resposta;
+		public Response transferencia(final TransferenciaRequest transferencia) {
+			//log
+			LogTransferencia logTransferencia = new LogTransferencia();
+			logTransferencia.setHorario(new Date());
+			logTransferencia.setContaDestino(transferencia.getContaDestino());
+			logTransferencia.setContaOrigem(transferencia.getContaOrigem());
+			logTransferencia.setValor(transferencia.getValor());
 
-		try {
-			ContaCorrenteDAO contaCorrenteDAO = Singleton.INSTANCE.getContaCorrenteDAO();
-			ContaCorrente contaCorrenteDestino = contaCorrenteDAO.findByNumero(transferencia.getContaDestino());
-			if (contaCorrenteDestino == null) {
-				resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
-				logTransferencia.setStatus(StatusTransacao.CONTA_NAO_EXISTE);
-			}
-			else {
-				double saldoAntesDaTransferencia = contaCorrenteDestino.getSaldo();
-				contaCorrenteDestino.setSaldo(saldoAntesDaTransferencia + transferencia.getValor());
-				resposta = Response.status(STATUS_CODE_OK).build();
-				logTransferencia.setStatus(StatusTransacao.SUCESSO);
+			Response resposta;
 
+			try {
+				ContaCorrenteDAO contaCorrenteDAO = Singleton.INSTANCE.getContaCorrenteDAO();
+				ContaCorrente contaCorrenteDestino = contaCorrenteDAO.findByNumero(transferencia.getContaDestino());
 				ContaCorrente contaCorrenteOrigem = contaCorrenteDAO.findByNumero(transferencia.getContaOrigem());
-				if (contaCorrenteOrigem == null) {
+				if (contaCorrenteDestino == null) {
+					resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
+					logTransferencia.setStatus(StatusTransacao.CONTA_NAO_EXISTE);
+				}
+				else if (contaCorrenteOrigem == null) {
 					resposta = Response.status(STATUS_CODE_NOT_FOUND).build();
 					logTransferencia.setStatus(StatusTransacao.CONTA_NAO_EXISTE);
 				}
 				else {
+					double saldoDestinoAntesDaTransferencia = contaCorrenteDestino.getSaldo();
+					contaCorrenteDestino.setSaldo(saldoDestinoAntesDaTransferencia + transferencia.getValor());
+
 					double saldoOrigemAntesDaTransferencia = contaCorrenteOrigem.getSaldo();
 					contaCorrenteOrigem.setSaldo(saldoOrigemAntesDaTransferencia - transferencia.getValor());
+					
+					contaCorrenteOrigem.addTransacao(logTransferencia);
+					contaCorrenteDestino.addTransacao(logTransferencia);
+
 					resposta = Response.status(STATUS_CODE_OK).build();
 					logTransferencia.setStatus(StatusTransacao.SUCESSO);
 				}
-
 			}
-
+			catch (Exception e) {
+				resposta = Response.status(STATUS_CODE_ERROR).build();
+				logTransferencia.setStatus(StatusTransacao.ERRO);
+				logTransferencia.setMsgExcecao(e.getMessage());
+			}
+			Singleton.INSTANCE.getLogTransferenciaDAO().add(logTransferencia);
+			return resposta;
 		}
-		catch (Exception e) {
-			resposta = Response.status(STATUS_CODE_ERROR).build();
-			logTransferencia.setStatus(StatusTransacao.ERRO);
-			logTransferencia.setMsgExcecao(e.getMessage());
 
-		}
-		return resposta;
-	}
-	
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -315,6 +313,7 @@ public class ContaCorrenteService {
 				double saldoAntesDoSaque = contaCorrente.getSaldo();
 				contaCorrente.setSaldo(saldoAntesDoSaque - saqueRequest.getValor());
 				resposta = Response.status(STATUS_CODE_OK).build();
+				contaCorrente.addTransacao(logSaque);
 				logSaque.setStatus(StatusTransacao.SUCESSO);
 			}
 		}

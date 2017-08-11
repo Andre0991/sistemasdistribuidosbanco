@@ -4,7 +4,7 @@ import java.util.Date;
 
 import common.StatusTransacao;
 
-public class LogTransferencia {
+public class LogTransferencia extends LogTransacao {
 	
 	private String contaOrigem;
 	private String contaDestino;
@@ -13,8 +13,17 @@ public class LogTransferencia {
 	private Date horario;
 	private StatusTransacao status;
 	private String msgExcecao;
+	private String tipo = "transferencia";
 	
 	
+	public String getTipo() {
+		return tipo;
+	}
+
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
+	}
+
 	public Double getValor() {
 		return valor;
 	}

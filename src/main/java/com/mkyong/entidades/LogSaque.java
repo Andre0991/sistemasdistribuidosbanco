@@ -7,13 +7,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 import common.StatusTransacao;
 
 @XmlRootElement
-public class LogSaque {
+public class LogSaque extends LogTransacao {
 	private Double valor;
 	private String numeroConta;
 
 	private Date horario;
 	private StatusTransacao status;
 	private String msgExcecao;
+	private String tipo = "saque";
 
 	public Double getValor() {
 		return valor;
@@ -53,6 +54,14 @@ public class LogSaque {
 
 	public void setMsgExcecao(String msgExcecao) {
 		this.msgExcecao = msgExcecao;
+	}
+
+	public String getTipo() {
+		return tipo;
+	}
+
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
 	}
 
 }

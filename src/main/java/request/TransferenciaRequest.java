@@ -1,6 +1,6 @@
 package request;
 
-public class Transferencia {
+public class TransferenciaRequest {
 
 		private Double valor;
 		private String contaOrigem;
@@ -11,16 +11,16 @@ public class Transferencia {
 			return contaOrigem;
 		}
 		
-		public void setContaOrigem(String conta1){
-			this.contaOrigem = conta1;
+		public void setContaOrigem(String contaOrigem){
+			this.contaOrigem = contaOrigem;
 		}
 
 		public String getContaDestino(){
 			return contaDestino;
 		}
 		
-		public void setContaDestino (String conta2){
-			this.contaDestino = conta2;
+		public void setContaDestino (String contaDestino){
+			this.contaDestino = contaDestino;
 		}
 		
 		public double getValor(){

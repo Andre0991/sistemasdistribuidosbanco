@@ -11,18 +11,9 @@ public class LogTed extends LogTransacao {
 
 	private int idBancoDestino;
 	private double valor;
-	private String numeroContaOrigem;
-	private String numeroContaDestino;
+	private String contaOrigem;
+	private String contaDestino;
 
-	public String getTipo() {
-		return tipo;
-	}
-	public void setTipo(String tipo) {
-		this.tipo = tipo;
-	}
-	public String getMsgErro() {
-		return msgErro;
-	}
 	private Date horario;
 	private StatusTransacao status;
 	private String msgErro;
@@ -41,16 +32,16 @@ public class LogTed extends LogTransacao {
 		this.valor = valor;
 	}
 	public String getNumeroContaOrigem() {
-		return numeroContaOrigem;
+		return contaOrigem;
 	}
 	public void setNumeroContaOrigem(String numeroContaOrigem) {
-		this.numeroContaOrigem = numeroContaOrigem;
+		this.contaOrigem = numeroContaOrigem;
 	}
 	public String getNumeroContaDestino() {
-		return numeroContaDestino;
+		return contaDestino;
 	}
 	public void setNumeroContaDestino(String numeroContaDestino) {
-		this.numeroContaDestino = numeroContaDestino;
+		this.contaDestino = numeroContaDestino;
 	}
 	public Date getHorario() {
 		return horario;
@@ -69,6 +60,16 @@ public class LogTed extends LogTransacao {
 	}
 	public void setMsgErro(String msgErro) {
 		this.msgErro = msgErro;
+	}
+
+	public String getTipo() {
+		return tipo;
+	}
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
+	}
+	public String getMsgErro() {
+		return msgErro;
 	}
 
 }
