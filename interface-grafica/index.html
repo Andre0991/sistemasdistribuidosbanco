@@ -88,20 +88,20 @@
           <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
               <li class="active"><a href="#">Home</a></li>
-              <li><a href="#">Transferência</a></li>
-              <li><a href="#">TED</a></li>
-              <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
-                <ul class="dropdown-menu">
-                  <li><a href="#">Action</a></li>
-                  <li><a href="#">Another action</a></li>
-                  <li><a href="#">Something else here</a></li>
-                  <li role="separator" class="divider"></li>
-                  <li class="dropdown-header">Nav header</li>
-                  <li><a href="#">Separated link</a></li>
-                  <li><a href="#">One more separated link</a></li>
-                </ul>
-              </li>
+              <li><a href="#" onClick="listTransferencias()">Transferência</a></li>
+              <!-- <li><a href="#">TED</a></li> -->
+              <!-- <li class="dropdown"> -->
+              <!-- <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a> -->
+              <!-- <ul class="dropdown-menu"> -->
+              <!-- <li><a href="#">Action</a></li> -->
+              <!-- <li><a href="#">Another action</a></li> -->
+              <!-- <li><a href="#">Something else here</a></li> -->
+              <!-- <li role="separator" class="divider"></li> -->
+              <!-- <li class="dropdown-header">Nav header</li> -->
+              <!-- <li><a href="#">Separated link</a></li> -->
+              <!-- <li><a href="#">One more separated link</a></li> -->
+              <!-- </ul> -->
+              <!-- </li> -->
             </ul>
             <ul class="nav navbar-nav navbar-right">
               <li class="active"><a href="./">Default <span class="sr-only">(current)</span></a></li>
@@ -140,6 +140,34 @@
     <script>
          var clienteEndPoint = "http://localhost:8080/RESTfulExample/rest/cliente";
          var contaCorrenteEndPoint = "http://localhost:8080/RESTfulExample/rest/contaCorrente";
+         var logEndPoint = "http://localhost:8080/RESTfulExample/rest/log";
+
+     function listTransferencias() {
+         $('#here_table').empty();
+         $.getJSON( logEndPoint + "/transferencias", {
+             format: "json"
+         })
+          .done(function( data ) {
+              var $table = $('<table/>');
+              $table.addClass('table table-striped');
+              var headerStr = "";
+              $table.append("<tr>"
+                         + "<td>Horário</td>"
+              + "<td>Conta origem</td>"
+              + "<td>Conta destino</td>"
+              + "<td>Valor</td>"
+              + "</tr>");
+              $.each( data, function( i, transacao ) {
+                  $table.append("<tr>"
+                  + "<td>" + new Date(transacao.horario) + "</td>"
+                  + "<td>" + transacao.contaOrigem + "</td>"
+                  + "<td>" + transacao.contaDestino + "</td>"
+                  + "<td>" + transacao.valor + "</td>"
+                  + "</tr>");
+              });
+              $('#here_table').append($table);
+          });
+     }
 
      function addNomeOperacaoToTable(nomeOperacao) {
          nomeOperacaoTr = "";
@@ -171,7 +199,7 @@
      function addContaDestinoToTable(contaDestino) {
          contaDestinoTr = "";
          contaDestinoTr += "<tr>";
-         contaDestinoTr += "<td><b>Conta</b></td>";
+         contaDestinoTr += "<td><b>Conta Destino</b></td>";
          contaDestinoTr += "<td>" + contaDestino + "</td>";
          contaDestinoTr += "</tr>";
          return contaDestinoTr;
