@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="favicon.ico">
+
+    <title>Home</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/navbar.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+<!-- Large modal -->
+      <!-- <button class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg">Large modal</button> -->
+
+      <div id="clienteModal" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" >
+          <div class="modal-dialog modal-lg">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                      <h4 class="modal-title" id="modal-title">Detalhes do cliente</h4>
+
+                  </div>
+                  <div class="modal-body">
+                      <h5>Dados pessoais</h5>
+
+                      <table class='table table-striped'>
+                          <tr>
+                              <td><b>Nome</b></td>
+                              <td id="modal-cliente-nome">Nome</td>
+                          </tr>
+                      </table>
+
+                      <h5>Conta corrente</h5>
+
+                      <table class='table table-striped'>
+                          <tr>
+                              <td><b>Número da conta corrente</b></td>
+                              <td id="modal-cliente-numero-da-conta"></td>
+                          </tr>
+                          <tr>
+                              <td><b>Saldo</b></td>
+                              <td id="modal-cliente-saldoCC"></td>
+                          </tr>
+                      </table>
+
+                      <div id="modal-cliente-extrato">
+                      </div>
+
+                      <div class="modal-footer">
+                          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+    <div class="container">
+
+      <!-- Static navbar -->
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Banco</a>
+          </div>
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+              <li class="active"><a href="#">Home</a></li>
+              <li><a href="#">Transferência</a></li>
+              <li><a href="#">TED</a></li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                  <li><a href="#">Action</a></li>
+                  <li><a href="#">Another action</a></li>
+                  <li><a href="#">Something else here</a></li>
+                  <li role="separator" class="divider"></li>
+                  <li class="dropdown-header">Nav header</li>
+                  <li><a href="#">Separated link</a></li>
+                  <li><a href="#">One more separated link</a></li>
+                </ul>
+              </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              <li class="active"><a href="./">Default <span class="sr-only">(current)</span></a></li>
+              <li><a href="../navbar-static-top/">Static top</a></li>
+              <li><a href="../navbar-fixed-top/">Fixed top</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div><!--/.container-fluid -->
+      </nav>
+
+      <!-- Main component for a primary marketing message or call to action -->
+      <div class="jumbotron">
+          <h1>Bem-vindo ao Banco A</h1>
+          <p>Olá.</p>
+          <p>
+              <a class="btn btn-lg btn-primary" role="button" id="btnSaldo">Listar clientes</a>
+
+          </p>
+
+          <div id="here_table">
+          </div>
+
+      </div>
+
+
+    </div> <!-- /container -->
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')</script>
+    <script src="js/bootstrap.min.js"></script>
+
+    <script>
+         var clienteEndPoint = "http://localhost:8080/RESTfulExample/rest/cliente";
+         var contaCorrenteEndPoint = "http://localhost:8080/RESTfulExample/rest/contaCorrente";
+
+     function addNomeOperacaoToTable(nomeOperacao) {
+         nomeOperacaoTr = "";
+         nomeOperacaoTr += "<tr>";
+         nomeOperacaoTr += "<td></td>";
+         nomeOperacaoTr += "<td><b>" + nomeOperacao + "</b></td>";
+         nomeOperacaoTr += "</tr>";
+         return nomeOperacaoTr;
+     }
+
+     function addContaOrigemToTable(contaOrigem) {
+         contaOrigemTr = "";
+         contaOrigemTr += "<tr>";
+         contaOrigemTr += "<td><b>Conta Origem</b></td>";
+         contaOrigemTr += "<td>" + contaOrigem + "</td>";
+         contaOrigemTr += "</tr>";
+         return contaOrigemTr;
+     }
+
+     function addBancoDestinoToTable(bancoDestino) {
+         bancoDestinoTr = "";
+         bancoDestinoTr += "<tr>";
+         bancoDestinoTr += "<td><b>BancoDestino</b></td>";
+         bancoDestinoTr += "<td>" + bancoDestino + "</td>";
+         bancoDestinoTr += "</tr>";
+         return bancoDestinoTr;
+     }
+
+     function addContaDestinoToTable(contaDestino) {
+         contaDestinoTr = "";
+         contaDestinoTr += "<tr>";
+         contaDestinoTr += "<td><b>Conta</b></td>";
+         contaDestinoTr += "<td>" + contaDestino + "</td>";
+         contaDestinoTr += "</tr>";
+         return contaDestinoTr;
+     }
+
+     function addHorarioToTable(horario) {
+         horarioTr = "";
+         horarioTr += "<tr>";
+         horarioTr += "<td><b>Horário</b></td>";
+         horarioTr += "<td>" + new Date(horario) + "</td>";
+         horarioTr += "</tr>";
+         return horarioTr;
+     }
+
+     function addValorToTable(valor, tdClass) {
+         valorTd = "";
+         valorTd += "<tr>";
+         valorTd += "<td><b>Valor</b></td>";
+         valorTd += "<td class='" + tdClass + "'>" + valor + "</td>";
+         valorTd += "</tr>";
+         return valorTd;
+     }
+
+
+
+
+     function addSaqueOuDepositoToModalExtrato(nomeOperacao, transacao, tdClass) {
+         if (transacao.status != "SUCESSO") {
+             return;
+         }
+         var content = '';
+
+         content += "<table class='table table-striped'>";
+
+         content += addNomeOperacaoToTable(nomeOperacao);
+         content += addHorarioToTable(transacao.horario);
+
+         content += "<tr>";
+         content += "<td><b>Conta</b></td>";
+         content += "<td>" + transacao.numeroConta + "</td>";
+         content += "</tr>";
+
+         content += addValorToTable(transacao.valor, tdClass);
+
+
+         content += "</table>";
+
+         $('#modal-cliente-extrato').append(content);
+     }
+
+     function addTedToModalExtrato(transacao, numeracao) {
+         var content = "<table class='table table-striped'>";
+         content += addNomeOperacaoToTable("Transferência");
+         content += addHorarioToTable(transacao.horario);
+         content += addContaOrigemToTable(transacao.contaOrigem);
+         content += addContaDestinoToTable(transacao.contaDestino);
+         content += addBancoDestinoToTable(transacao.idBancoDestino);
+
+         tdClass = "";
+         if (numeracao == transacao.contaOrigem) {
+             tdClass = "danger";
+         }
+         else {
+             tdClass = "success";
+         }
+
+         content += addValorToTable(transacao.valor, tdClass);
+
+         content += "</table>";
+
+         $('#modal-cliente-extrato').append(content);
+     }
+
+     function addTransferenciaToModalExtrato(transacao, numeracao) {
+         var content = "<table class='table table-striped'>";
+         content += addNomeOperacaoToTable("Transferência");
+         content += addHorarioToTable(transacao.horario);
+         content += addContaOrigemToTable(transacao.contaOrigem);
+         content += addContaDestinoToTable(transacao.contaDestino);
+
+         tdClass = "";
+         if (numeracao == transacao.contaOrigem) {
+             tdClass = "danger";
+         }
+         else {
+             tdClass = "success";
+         }
+
+         content += addValorToTable(transacao.valor, tdClass);
+
+         content += "</table>";
+
+         $('#modal-cliente-extrato').append(content);
+     }
+
+     function addSaqueToModalExtrato(transacao) {
+         addSaqueOuDepositoToModalExtrato("Saque", transacao, "danger");
+     }
+
+     function addDepositoToModalExtrato(transacao) {
+         addSaqueOuDepositoToModalExtrato("Depósito", transacao, "success");
+     }
+
+     function populateExtrato(id, numeracao) {
+         $('#modal-cliente-extrato').empty();
+         var extratoTitle = "<h5>Extrato</h5>";
+         $('#modal-cliente-extrato').append(extratoTitle);
+
+         $.getJSON( contaCorrenteEndPoint + "/extrato/" + id, {
+             format: "json"
+         })
+          .done(function( data ) {
+              $.each( data, function( i, transacao ) {
+                  if (transacao.tipo == "deposito") {
+                      addDepositoToModalExtrato(transacao);
+                  }
+                  else if (transacao.tipo == "saque") {
+                      addSaqueToModalExtrato(transacao);
+                  }
+                  else if (transacao.tipo == "transferencia") {
+                      addTransferenciaToModalExtrato(transacao, numeracao);
+                  }
+                  else if (transacao.tipo == "ted") {
+                      addTedToModalExtrato(transacao, numeracao);
+                  }
+              });
+          });
+     }
+
+     function showCliente(id) {
+         $.getJSON( clienteEndPoint + "/" + id, {
+             format: "json"
+         })
+          .done(function( data ) {
+              $('#clienteModal').modal('show')
+              $('#modal-cliente-nome').text(data.nome + " " + data.sobrenome);
+              $('#modal-cliente-numero-da-conta').text(data.contaCorrente.numeracao);
+              $('#modal-cliente-saldoCC').text("R$ " + data.contaCorrente.saldo);
+
+            populateExtrato(id, data.contaCorrente.numeracao);
+        });
+        }
+
+     $( "#btnSaldo" ).click(function() {
+         $('#here_table').empty();
+         chamadaSaldo();
+     });
+
+     function chamadaSaldo() {
+         $.getJSON( clienteEndPoint, {
+             format: "json"
+         })
+          .done(function( data ) {
+              var content = "<table class='table table-striped'>"
+                  content += '<tr>';
+                  content += '<td>' + "<b>" + "#"     + "<b>" + '</td>';
+                  content += '<td>' + "<b>" + "Nome"  + "<b>" + '</td>';
+                  content += '<td>' + "<b>" + "Conta" + "<b>" + '</td>';
+                  content += '</tr>';
+              $.each( data, function( i, cliente ) {
+                  /* $( "<img>" ).attr( "src", item.media.m ).appendTo( "#images" );*/
+                  /* if ( i === 3 ) {*/
+                  /* return false;*/
+                  /* }*/
+                  /* content += '<tr><td>' + 'result ' +  cliente.id + '</td></tr>';*/
+                  content += '<tr>';
+                  content += '<td>' + cliente.id + '</td>';
+                  content += '<td>' + "<a href='#' onclick='showCliente(" + cliente.id + ")'>" + cliente.nome + '</td>';
+                  content += '<td>' + cliente.contaCorrente.numeracao + '</td>';
+                  content += '</tr>';
+              });
+              content += "</table>"
+              $('#here_table').append(content);
+          });
+     };
+    </script>
+  </body>
+</html>
